@@ -4,9 +4,10 @@ const ServerError = require('../errors/ServerError');
 const ForbiddenError = require('../errors/ForbiddenError');
 const NotFoundError = require('../errors/NotFoundError');
 
+// returns movies saved by the current user
 const getMovies = (req, res, next) => {
-  // find in db
-  Movie.find({})
+  // find in db (обьект в обьекте!)
+  Movie.find({ owner: req.user._id })
     .then((movies) => res.status(200).send(movies))
     .catch(() => next(new ServerError('Ошибка на сервере')));
 };

@@ -61,7 +61,7 @@ const MovieSchema = new mongoose.Schema({
     message: 'Поле не соответствует формату URL',
   },
 
-  // contained in the filmsdb service response /and "_id" and позитив лог  "__v": 0
+  // contained in the moviesdb service response /and "_id" and позитив лог  "__v": 0
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
