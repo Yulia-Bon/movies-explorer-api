@@ -19,7 +19,7 @@ const auth = (req, res, next) => {
     // verify the token or send an error if it fails
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    throw new UnauthorizedError('Авторизируйтесь');
+    throw new UnauthorizedError('Неверный токен');
   }
 
   req.user = payload;
