@@ -2,8 +2,17 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/users');
 const NotFoundError = require('../errors/NotFoundError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
-const ConflictError = require('../errors/ConflictError');
+const NotExistError = require('../errors/UnauthorizedError');
+const AlreadyExistError = require('../errors/ConflictError');
+const BadRequestError = require('../errors/BadRequestError');
+
+const {
+  emailErrorMessage,
+  regErrorMessage,
+  loginErrorMessage,
+  userUpdateErrorMessage,
+  idNotFoundErrorMessage,
+} = require('../utils/constants');
 
 const createUser = (req, res, next) => {
   const { name, email, password } = req.body;
@@ -12,7 +21,7 @@ const createUser = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        throw new ConflictError('Email уже зарегистрирован');
+        throw new AlreadyExistError(emailErrorMessage);
       }
       // use for secure storage of passwords
       return bcrypt.hash(password, 10);
@@ -30,8 +39,13 @@ const createUser = (req, res, next) => {
         _id,
       });
     })
-
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(regErrorMessage));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const login = (req, res, next) => {
@@ -39,13 +53,13 @@ const login = (req, res, next) => {
   User.findOne({ email }, '+password')
     .then((user) => {
       if (!user) {
-        return next(new UnauthorizedError('Неверный логин или пароль'));
+        return next(new NotExistError(loginErrorMessage));
       }
       // checking password (use bcrypt compare function)
       return bcrypt.compare(password, user.password)
         .then((isValid) => {
           if (!isValid) {
-            return next(new UnauthorizedError('Неверный логин или пароль'));
+            return next(new NotExistError(loginErrorMessage));
           }
           return user;
         });
@@ -73,14 +87,23 @@ const updateProfile = (req, res, next) => {
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch(() => next(new UnauthorizedError('Неверный логин или пароль')));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError(userUpdateErrorMessage));
+      }
+      if (err.code === 11000) {
+        next(new AlreadyExistError(emailErrorMessage));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const getUserInfo = (req, res, next) => {
   const { _id } = req.user;
   return User.findById(_id)
     .orFail(() => {
-      throw new NotFoundError('Пользователь не найден');
+      throw new NotFoundError(idNotFoundErrorMessage);
     })
     .then((user) => {
       const { name, email } = user;

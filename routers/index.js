@@ -5,6 +5,7 @@ const movieRoutes = require('./movies');
 const { login, createUser } = require('../controllers/users');
 const { validateRegist, validateLogin } = require('../middlewares/validator');
 const NotFoundError = require('../errors/NotFoundError');
+const { pageNotFoundErrorMessage } = require('../utils/constants');
 
 router.post('/signup', validateRegist, createUser);
 router.post('/signin', validateLogin, login);
@@ -12,8 +13,8 @@ router.use(auth);
 router.use('/users', userRoutes);
 router.use('/movies', movieRoutes);
 
-router.use('*', (req, res, next) => {
-  next(new NotFoundError('Запрашиваемый ресурс не найден'));
+router.use('*', () => {
+  throw new NotFoundError(pageNotFoundErrorMessage);
 });
 
 module.exports = router;

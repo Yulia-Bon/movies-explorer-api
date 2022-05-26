@@ -1,15 +1,21 @@
 const Movie = require('../models/movie');
 
-const ServerError = require('../errors/ServerError');
-const ForbiddenError = require('../errors/ForbiddenError');
 const NotFoundError = require('../errors/NotFoundError');
+const NotAllowedError = require('../errors/NotAllowedError');
+const {
+  movieDataErrorMessage,
+  movieOwnerErrorMessage,
+  movieIdErrorMessage,
+} = require('../utils/constants');
 
 // returns movies saved by the current user
 const getMovies = (req, res, next) => {
   // find in db (обьект в обьекте!)
   Movie.find({ owner: req.user._id })
     .then((movies) => res.status(200).send(movies))
-    .catch(() => next(new ServerError('Ошибка на сервере')));
+    .catch((err) => {
+      next(err);
+    });
 };
 
 const createMovie = (req, res, next) => {
@@ -20,7 +26,7 @@ const createMovie = (req, res, next) => {
     year,
     description,
     image,
-    trailer,
+    trailerLink,
     thumbnail,
     nameRU,
     nameEN,
@@ -35,7 +41,7 @@ const createMovie = (req, res, next) => {
     year,
     description,
     image,
-    trailer,
+    trailerLink,
     thumbnail,
     nameRU,
     nameEN,
@@ -43,7 +49,13 @@ const createMovie = (req, res, next) => {
     movieId,
   })
     .then((movie) => res.status(200).send(movie))
-    .catch((err) => next(new ServerError(err)));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new NotFoundError(movieDataErrorMessage));
+      } else {
+        next(err);
+      }
+    });
 };
 
 const deleteMovie = (req, res, next) => {
@@ -51,11 +63,11 @@ const deleteMovie = (req, res, next) => {
   // use the method from magnus (one document according to the condition)
   Movie.findOne({ _id: req.params.movieId })
     .orFail(() => {
-      throw new NotFoundError('Такого фильма не существует');
+      throw new NotFoundError(movieIdErrorMessage);
     })
     .then((movie) => {
       if (String(movie.owner) !== owner) {
-        throw new ForbiddenError('Удалять можно только свои фильмы');
+        throw new NotAllowedError(movieOwnerErrorMessage);
       }
       // use the method from magnus (find a matching document, remove it)
       return Movie.findByIdAndRemove(movie._id).select('-owner');
@@ -66,9 +78,7 @@ const deleteMovie = (req, res, next) => {
         deleteMovie: movie,
       });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };
 
 module.exports = {

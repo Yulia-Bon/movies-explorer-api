@@ -39,7 +39,7 @@ const MovieSchema = new mongoose.Schema({
     message: 'Поле не соответствует формату URL',
   },
 
-  trailer: {
+  trailerLink: {
     type: String,
     required: true,
     validate: {
@@ -68,7 +68,7 @@ const MovieSchema = new mongoose.Schema({
   },
 
   movieId: {
-    type: String,
+    type: Number,
     required: true,
   },
 

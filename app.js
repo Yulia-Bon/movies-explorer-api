@@ -1,16 +1,17 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const { errors } = require('celebrate');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const { NotFoundError } = require('./errors/NotFoundError');
+const { limiter } = require('./middlewares/limiter');
 const errorHandler = require('./middlewares/errorHandler');
 
 const router = require('./routers');
 
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { PORT, MONGO_URL } = require('./controllers/config');
+const { PORT, MONGO_URL } = require('./utils/config');
 
 mongoose.connect(MONGO_URL, {
   useNewUrlParser: true,
@@ -19,25 +20,15 @@ mongoose.connect(MONGO_URL, {
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(requestLogger); // подключаем логгер запросов
-
 app.use('*', cors());
 app.options('*', cors());
 
 app.use('/', router);
 
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
-
-app.use('*', (req, res, next) => {
-  next(new NotFoundError('Запрашиваемый ресурс не найден'));
-});
-
+app.use(helmet());
 app.use(errorLogger); // подключаем логгер ошибок
+app.use(limiter);
 app.use(errors());
 app.use(errorHandler);
 

@@ -1,9 +1,10 @@
-const { celebrate, Joi, CelebrateError } = require('celebrate');
+const { celebrate, Joi } = require('celebrate');
 const { isURL } = require('validator');
+const { urlErrorMessage } = require('../utils/constants');
 
 const checkUrl = (value) => {
   if (!isURL(value)) {
-    return new CelebrateError('Ссылка не валидна');
+    throw new Error(urlErrorMessage);
   }
 
   return value;
@@ -43,9 +44,9 @@ const validateCreateMovie = celebrate({
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
     image: Joi.string().custom(checkUrl).required(),
-    trailer: Joi.string().custom(checkUrl).required(),
+    trailerLink: Joi.string().custom(checkUrl).required(),
     thumbnail: Joi.string().custom(checkUrl).required(),
-    movieId: Joi.string().required(),
+    movieId: Joi.number().required(),
   }),
 });
 
