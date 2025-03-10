@@ -2,7 +2,7 @@
 
 This repository contains the backend for the Movies Explorer project. It provides the necessary API to connect with the frontend and manage user data, movie information, and authentication.
 
-The frontend for this project can be found at https://yulia-bon.github.io/.
+The frontend for this project can be found at [https://yulia-bon.github.io/.](https://yulia-bon.github.io/movies-explorer-frontend/)
 
 ## 🚀 Getting Started Locally
 
@@ -45,7 +45,7 @@ npm run start
 Your backend will be available at http://localhost:3000.
 
 Frontend
-The frontend for this project can be found at https://yulia-bon.github.io/. It connects to the backend via API requests to the locally running server.
+The frontend for this project can be found at [https://yulia-bon.github.io/.](https://yulia-bon.github.io/movies-explorer-frontend/) It connects to the backend via API requests to the locally running server.
 
 🛠️ Available Scripts
 In the project directory, you can run:
